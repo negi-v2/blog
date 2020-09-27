@@ -1,0 +1,72 @@
+
+<!-- Post Content -->
+  <article>
+      
+    <div class="container">
+        
+      <div class="row">
+          
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <h2 class="section-heading">1. Introduction</h2>
+            <p>
+              This section is to provide you the brief introduction to spring data MongoDb Aggregation  and various operations with aggregation.
+              For common Mongo operation inject MongoTemplate helper class.
+            </p>
+            <p>
+                Mongo Aggregation is use to process data and return the computed results. The Data is processed in various pipeline stages with each pipeline stage result is passed to next stage in pipline as input.
+                A general projection pipeline contains a match opertaion followed by a group operaion and a project operation. 
+                
+            </p>
+            <p>Consider following documnet</p>
+       
+        <p [hidden]="true">{{</p>
+            <pre class="prettyprint" >
+                <code >
+                    @Document
+                    public class User {
+                        @Id
+                        private String id;
+                        private String name;
+                        private Integer age;
+                        private String email;
+                        private String city;
+                    }
+                </code>
+            </pre>
+        <p [hidden]="true">}}</p>
+        <p> Group by age and collect data fields of grouped data.</p>
+        <pre class="prettyprint">
+            <code>
+                GroupOperation ageGroup = Aggregation.group("age")
+                .push(new BasicDBObject("name", "$name")
+                        .append("email", "$email")).as("data")
+                .push(DateOperators.DateToString.dateOf("initiatedAt").defaultFormat()).as("date")
+                .count().as("ageWiseCount");
+            </code>
+        </pre>
+        <p> The above gouped data can be later used in pipeline stages for further procession.</p>
+        <p> Filter age grouped data whose for cities Delhi and Mumbai within the age group. We can also apply multiple matching criteria using BooleanOperation.</p> 
+        <pre class="prettyprint">
+            <code>
+                ProjectionOperation projectionOperation = Aggregation.project("ageWiseCount" , "date")
+                .and("data")
+                .filter("ageData" , ComparisonOperators.Eq.valueOf("ageData.city").equalToValue("Delhi")).as("delhiAgeGroupData")
+                .and("data")
+                .filter("ageData",BooleanOperators.Or.or(ComparisonOperators.Eq.valueOf("ageData.city").equalToValue("Delhi"),
+                        ComparisonOperators.Eq.valueOf("ageData.city").equalToValue("mumbai")) ).as("cityData")
+                .and("_id").as("ageGroup");
+            </code>
+        </pre>
+
+         
+          <blockquote class="blockquote">The dreams of yesterday are the hopes of today and the reality of tomorrow.</blockquote>
+
+         
+          <p>Reference
+            <a href="https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/">Spring Data MongoDb</a>.
+             Aggregation Doc
+            <a href="https://docs.mongodb.com/manual/aggregation/">MongoDb Aggregation</a>.</p>
+        </div>
+      </div>
+    </div>
+  </article>
